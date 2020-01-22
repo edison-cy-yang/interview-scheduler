@@ -70,6 +70,21 @@ export default function Application(props) {
     });
   }, []);
 
+  function bookInterview(id, interview) {
+    // console.log(id, interview);
+    //copy the specific appointment object with id, as well as the interview object
+    const appointment = {
+      ...state.appointments[id],
+      interview: { ...interview }
+    };
+    //Now we have a single appointment object, update this appointment in the appointments object
+    const appointments = {
+      ...state.appointments,
+      [id]: appointment
+    };
+    setState({...state, appointments});
+  }
+
   const appointments = getAppointmentsForDay(state, state.day);
   const interviewers = getInterviewersForDay(state, state.day);
 
@@ -82,6 +97,7 @@ export default function Application(props) {
       time={appointment.time}
       interview={interview}
       interviewers={interviewers}
+      bookInterview={bookInterview}
     />);
   });
 
@@ -109,7 +125,7 @@ export default function Application(props) {
       </section>
       <section className="schedule">
         {appointmentsComponent}
-        <Appointment key="last" time="5pm" />
+        <Appointment key="last" time="5pm" bookInterview={bookInterview}/>
       </section>
     </main>
   );
