@@ -6,6 +6,7 @@ import "components/Application.scss";
 import "components/DayList";
 import DayList from "components/DayList";
 import Appointment from "components/Appointment";
+import {getAppointmentsForDay} from "../helpers/selectors";
 
 const appointments = [
   {
@@ -47,17 +48,26 @@ const appointments = [
 ];
 
 export default function Application(props) {
-  const [day, setDay] = useState("Monday");
-  const [days, setDays] = useState([]);
+  // const [day, setDay] = useState("Monday");
+  // const [days, setDays] = useState([]);
+
+  const [state, setState] = useState({
+    day: "Monday",
+    days: [],
+    appointments: {}
+  });
+
+  const setDay = day => setState(prev => ({ ...prev, day}));
 
   useEffect(() => {
-    axios.get("http://localhost:8001/api/days").then(res => {
-      console.log(res.data);
-      setDays(res.data);
+    const daysPromise = axios.get("http://localhost:8001/api/days");
+    const appointmentsPromise = axios.get("http://localhost:8001/api/appointments");
+    Promise.all([daysPromise, appointmentsPromise]).then((all) => {
+      setState(prev => ({...prev, days: all[0].data, appointments: all[1].data}));
     });
   }, []);
 
-  const appointmentsComponent = appointments.map((appointment) => {
+  const appointmentsComponent = getAppointmentsForDay(state, state.day).map((appointment) => {
     return (
     <Appointment
       key={appointment.id}
@@ -76,8 +86,8 @@ export default function Application(props) {
         <hr className="sidebar__separator sidebar--centered" />
         <nav className="sidebar__menu">
           <DayList 
-            days={days}
-            day={day}
+            days={state.days}
+            day={state.day}
             setDay={setDay}
           />
         </nav>
