@@ -82,7 +82,12 @@ export default function Application(props) {
       ...state.appointments,
       [id]: appointment
     };
-    setState({...state, appointments});
+    //make request to save the appointment
+    return axios.put(`http://localhost:8001/api/appointments/${id}`, {interview})
+      .then(res => {
+        setState({...state, appointments});
+        return Promise.resolve(res);
+      });
   }
 
   const appointments = getAppointmentsForDay(state, state.day);
