@@ -87,7 +87,10 @@ export default function Application(props) {
       .then(res => {
         setState({...state, appointments});
         return Promise.resolve(res);
-      });
+      })
+      .catch(err => {
+        return Promise.reject(err);
+      })
   }
 
   function cancelInterview(id) {
@@ -100,10 +103,14 @@ export default function Application(props) {
       ...state.appointments,
       [id]: appointment
     }
-    return axios.delete(`http://localhost:8001/api/appointments/${id}`).then(res => {
-      setState({...state, appointments});
-      return Promise.resolve();
-    })
+    return axios.delete(`http://localhost:8001/api/appointments/${id}`)
+      .then(res => {
+        setState({...state, appointments});
+        return Promise.resolve();
+      })
+      .catch(err => {
+        return Promise.reject(err);
+      })
     
   }
 
