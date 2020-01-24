@@ -14,10 +14,10 @@ function reducer(state, action) {
     case SET_APPLICATION_DATA:
       return {...state, days: action.value.days, appointments: action.value.appointments, interviewers: action.value.interviewers};
     case SET_INTERVIEW: {
-      return {...state, appointments: action.value}
+      return {...state, appointments: action.value.appointments, days: action.value.days}
     }
     case DELETE_INTERVIEW: {
-      return {...state, appointments: action.value}
+      return {...state, appointments: action.value.appointments, days: action.value.days}
     }
     default:
       throw new Error(
@@ -59,7 +59,19 @@ export default function useApplicationData(initial) {
     //make request to save the appointment
     return axios.put(`http://localhost:8001/api/appointments/${id}`, {interview})
       .then(res => {
-        dispatch({type: SET_INTERVIEW, value: appointments});
+        //Need to get state.days, find the day, and decrement one 
+        const days = [...state.days];
+        ///use the appointment ID to find which day this appointment exists in
+        for (let i = 0; i < days.length; i++) {
+          const appointmentsForDay = days[i].appointments;
+          for (let j = 0; j < appointmentsForDay.length; j++) {
+            if (appointmentsForDay[j] === id) {
+              days[i].spots--;
+            }
+          }
+        }
+
+        dispatch({type: SET_INTERVIEW, value: {appointments, days}});
         return Promise.resolve(res);
       })
       .catch(err => {
@@ -79,7 +91,18 @@ export default function useApplicationData(initial) {
     }
     return axios.delete(`http://localhost:8001/api/appointments/${id}`)
       .then(res => {
-        dispatch({type: DELETE_INTERVIEW, value: appointments});
+        //Need to get state.days, find the day, and decrement one 
+        const days = [...state.days];
+        ///use the appointment ID to find which day this appointment exists in
+        for (let i = 0; i < days.length; i++) {
+          const appointmentsForDay = days[i].appointments;
+          for (let j = 0; j < appointmentsForDay.length; j++) {
+            if (appointmentsForDay[j] === id) {
+              days[i].spots++;
+            }
+          }
+        }
+        dispatch({type: DELETE_INTERVIEW, value: {appointments, days}});
         return Promise.resolve();
       })
       .catch(err => {
