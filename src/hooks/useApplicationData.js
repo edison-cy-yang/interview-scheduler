@@ -14,10 +14,35 @@ function reducer(state, action) {
     case SET_APPLICATION_DATA:
       return {...state, days: action.value.days, appointments: action.value.appointments, interviewers: action.value.interviewers};
     case SET_INTERVIEW: {
-      return {...state, appointments: action.value.appointments, days: action.value.days}
+      //copy the specific appointment object with id, as well as the interview object
+      const appointment = {
+        ...state.appointments[action.value.id],
+        interview: { ...action.value.interview }
+      };
+      //Now we have a single appointment object, update this appointment in the appointments object
+      const appointments = {
+        ...state.appointments,
+        [action.value.id]: appointment
+      };
+
+      const days = updateCount(state.days, {type: SET_INTERVIEW, day: state.day});
+
+      return {...state, appointments, days}
     }
     case DELETE_INTERVIEW: {
-      return {...state, appointments: action.value.appointments, days: action.value.days}
+      //set appointment interview to null
+      const appointment = {
+        ...state.appointments[action.value.id],
+        interview: null
+      }
+      const appointments = {
+        ...state.appointments,
+        [action.value.id]: appointment
+      }
+
+      const days = updateCount(state.days, {type: DELETE_INTERVIEW, day: state.day});
+
+      return {...state, appointments, days}
     }
     default:
       throw new Error(
@@ -26,6 +51,29 @@ function reducer(state, action) {
   }
 }
 
+function updateCount(array, action) {
+  return array.map((item, index) => {
+    if (item.name !== action.day) {
+      return item;
+    } else {
+      if (action.type === SET_INTERVIEW) {
+        return {
+          ...item,
+          spots: item.spots - 1
+        } 
+      } else if (action.type === DELETE_INTERVIEW) {
+        return {
+          ...item,
+          spots: item.spots + 1
+        }
+      } else {
+        return item;
+      }
+    }
+  });
+}
+
+
 export default function useApplicationData(initial) {
   const [state, dispatch] = useReducer(reducer, initial);
 
@@ -33,7 +81,27 @@ export default function useApplicationData(initial) {
     dispatch({type: SET_DAY, value: day});
   }
 
+  function socketHandler(dispatch) {
+    const webSocket = new WebSocket(process.env.REACT_APP_WEBSOCKET_URL);
+    webSocket.onopen = function(event) {
+      webSocket.send("ping");
+    }
+    webSocket.onmessage = function(event) {
+      const response = JSON.parse(event.data);
+      console.log(response);
+      if (event.data.type === SET_INTERVIEW) {
+        //find the appointment with id
+        
+        //find the interviewer detail by response.interview.interviewer (id)
+  
+  
+        // dispatch({type: SET_INTERVIEW, value: event.data.value});
+      }
+    }
+  }
+
   useEffect(() => {
+    socketHandler(dispatch);
     const daysPromise = axios.get("http://localhost:8001/api/days");
     const appointmentsPromise = axios.get("http://localhost:8001/api/appointments");
     const interviewersPromise = axios.get("http://localhost:8001/api/interviewers");
@@ -44,34 +112,32 @@ export default function useApplicationData(initial) {
     });
   }, []);
 
+  function updateCount(array, action) {
+    return array.map((item, index) => {
+      if (item.name !== action.day) {
+        return item;
+      } else {
+        if (action.type === SET_INTERVIEW) {
+          return {
+            ...item,
+            spots: item.spots - 1
+          } 
+        } else if (action.type === DELETE_INTERVIEW) {
+          return {
+            ...item,
+            spots: item.spots + 1
+          }
+        } else {
+          return item;
+        }
+      }
+    });
+  }
+
   function bookInterview(id, interview) {
-    // console.log(id, interview);
-    //copy the specific appointment object with id, as well as the interview object
-    const appointment = {
-      ...state.appointments[id],
-      interview: { ...interview }
-    };
-    //Now we have a single appointment object, update this appointment in the appointments object
-    const appointments = {
-      ...state.appointments,
-      [id]: appointment
-    };
-    //make request to save the appointment
     return axios.put(`http://localhost:8001/api/appointments/${id}`, {interview})
       .then(res => {
-        //Need to get state.days, find the day, and decrement one 
-        const days = [...state.days];
-        ///use the appointment ID to find which day this appointment exists in
-        for (let i = 0; i < days.length; i++) {
-          const appointmentsForDay = days[i].appointments;
-          for (let j = 0; j < appointmentsForDay.length; j++) {
-            if (appointmentsForDay[j] === id) {
-              days[i].spots--;
-            }
-          }
-        }
-
-        dispatch({type: SET_INTERVIEW, value: {appointments, days}});
+        dispatch({type: SET_INTERVIEW, value: { id, interview}});
         return Promise.resolve(res);
       })
       .catch(err => {
@@ -80,29 +146,9 @@ export default function useApplicationData(initial) {
   }
 
   function cancelInterview(id) {
-    //set appointment interview to null
-    const appointment = {
-      ...state.appointments[id],
-      interview: null
-    }
-    const appointments = {
-      ...state.appointments,
-      [id]: appointment
-    }
     return axios.delete(`http://localhost:8001/api/appointments/${id}`)
       .then(res => {
-        //Need to get state.days, find the day, and decrement one 
-        const days = [...state.days];
-        ///use the appointment ID to find which day this appointment exists in
-        for (let i = 0; i < days.length; i++) {
-          const appointmentsForDay = days[i].appointments;
-          for (let j = 0; j < appointmentsForDay.length; j++) {
-            if (appointmentsForDay[j] === id) {
-              days[i].spots++;
-            }
-          }
-        }
-        dispatch({type: DELETE_INTERVIEW, value: {appointments, days}});
+        dispatch({type: DELETE_INTERVIEW, value: {id}});
         return Promise.resolve();
       })
       .catch(err => {
