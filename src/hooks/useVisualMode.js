@@ -20,6 +20,7 @@ export default function useVisualMode(initial) {
     if (historyStack.length <= 1) return;
     historyStack.pop();
     const prevMode = historyStack[historyStack.length - 1];
+    setHistory(historyStack);
     setMode(prevMode);
   }
 
