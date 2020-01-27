@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 import "./styles.scss";
 
@@ -27,14 +27,30 @@ export default function Appointment(props) {
     props.interview ? SHOW : EMPTY
   );
 
+  console.log(props.interview);
+
+  useEffect(() => {
+    if (props.interview && mode === EMPTY) {
+      transition(SHOW);
+    }
+    if (props.interview === null && mode === SHOW) {
+      console.log("inside the check for delete case!!!!!!!");
+      console.log(props.interview);
+      transition(EMPTY);
+    }
+  }, [props.interview, transition, mode]);
+
+  ///problem is mode is not transitioned when props came in
+
   function save(name, interviewer) {
     const interview = {
       student: name,
       interviewer
-    };   
+    };
     return () => {
       transition(SAVING);
-      props.bookInterview(props.id, interview)
+      props
+        .bookInterview(props.id, interview)
         .then(() => {
           transition(SHOW);
         })
@@ -48,7 +64,8 @@ export default function Appointment(props) {
   function deleteInterview() {
     return () => {
       transition(DELETING, true);
-      props.cancelInterview(props.id)
+      props
+        .cancelInterview(props.id)
         .then(() => {
           transition(EMPTY);
         })
@@ -56,57 +73,67 @@ export default function Appointment(props) {
           transition(ERROR_DELETE, true);
           console.log(err);
         });
-    }
+    };
   }
 
   function confirmDelete() {
     return () => {
       transition(CONFIRM);
     };
-  };
+  }
 
   return (
     <article className="appointment">
       <Header time={props.time} />
-      {mode === EMPTY && <Empty onAdd={() => {transition(CREATE)}} />}
-      {mode === SHOW && (
+      {mode === EMPTY && (
+        <Empty
+          onAdd={() => {
+            transition(CREATE);
+          }}
+        />
+      )}
+      {mode === SHOW && props.interview && (
         <Show
           student={props.interview.student}
           interviewer={props.interview.interviewer}
           onDelete={confirmDelete}
           onEdit={() => transition(EDIT)}
-      />
+        />
       )}
       {mode === CREATE && (
         <Form
           interviewers={props.interviewers}
           onSave={save}
-          onCancel={() => {back()}}
+          onCancel={() => {
+            back();
+          }}
         />
-      )}  
-      {mode === SAVING && <Status message={"saving"} />}    
+      )}
+      {mode === SAVING && <Status message={"saving"} />}
       {mode === DELETING && <Status message="deleting" />}
-      {mode === CONFIRM && <Confirm message="Are you sure you want to cancel the appointment?" onConfirm={deleteInterview} onCancel={() => back()}/>}
+      {mode === CONFIRM && (
+        <Confirm
+          message="Are you sure you want to cancel the appointment?"
+          onConfirm={deleteInterview}
+          onCancel={() => back()}
+        />
+      )}
       {mode === EDIT && (
         <Form
           name={props.interview.student}
           interviewers={props.interviewers}
           interviewer={props.interview.interviewer.id}
           onSave={save}
-          onCancel={() => {back()}}
+          onCancel={() => {
+            back();
+          }}
         />
       )}
       {mode === ERROR_SAVE && (
-        <Error
-          message="Error occurred when saving"
-          onClose={() => back()}
-        />
+        <Error message="Error occurred when saving" onClose={() => back()} />
       )}
       {mode === ERROR_DELETE && (
-        <Error 
-          message="Error occurred when deleting"
-          onClose={() => back()}
-        />
+        <Error message="Error occurred when deleting" onClose={() => back()} />
       )}
     </article>
   );

@@ -7,7 +7,6 @@ const SET_INTERVIEW = "SET_INTERVIEW";
 const DELETE_INTERVIEW = "DELETE_INTERVIEW";
 
 function reducer(state, action) {
-  console.log(action);
   switch (action.type) {
     case SET_DAY:
       return { ...state, day: action.value }
@@ -35,6 +34,7 @@ function reducer(state, action) {
         ...state.appointments[action.value.id],
         interview: null
       }
+
       const appointments = {
         ...state.appointments,
         [action.value.id]: appointment
@@ -81,7 +81,7 @@ export default function useApplicationData(initial) {
     dispatch({type: SET_DAY, value: day});
   }
 
-  function socketHandler(dispatch) {
+  function socketHandler() {
     const webSocket = new WebSocket(process.env.REACT_APP_WEBSOCKET_URL);
     webSocket.onopen = function(event) {
       webSocket.send("ping");
@@ -89,19 +89,19 @@ export default function useApplicationData(initial) {
     webSocket.onmessage = function(event) {
       const response = JSON.parse(event.data);
       console.log(response);
-      if (event.data.type === SET_INTERVIEW) {
+      if (response.type === SET_INTERVIEW) {
         //find the appointment with id
-        
-        //find the interviewer detail by response.interview.interviewer (id)
-  
-  
-        // dispatch({type: SET_INTERVIEW, value: event.data.value});
+        if (response.interview) {
+          dispatch({type: SET_INTERVIEW, value: { id: response.id, interview: response.interview}});
+        } else {
+          dispatch({type: DELETE_INTERVIEW, value: {id: response.id}});
+        }
       }
     }
   }
 
   useEffect(() => {
-    socketHandler(dispatch);
+    socketHandler();
     const daysPromise = axios.get("http://localhost:8001/api/days");
     const appointmentsPromise = axios.get("http://localhost:8001/api/appointments");
     const interviewersPromise = axios.get("http://localhost:8001/api/interviewers");
@@ -111,28 +111,6 @@ export default function useApplicationData(initial) {
       dispatch({type: SET_APPLICATION_DATA, value: {days: all[0].data, appointments: all[1].data, interviewers: all[2].data}});
     });
   }, []);
-
-  function updateCount(array, action) {
-    return array.map((item, index) => {
-      if (item.name !== action.day) {
-        return item;
-      } else {
-        if (action.type === SET_INTERVIEW) {
-          return {
-            ...item,
-            spots: item.spots - 1
-          } 
-        } else if (action.type === DELETE_INTERVIEW) {
-          return {
-            ...item,
-            spots: item.spots + 1
-          }
-        } else {
-          return item;
-        }
-      }
-    });
-  }
 
   function bookInterview(id, interview) {
     return axios.put(`http://localhost:8001/api/appointments/${id}`, {interview})
