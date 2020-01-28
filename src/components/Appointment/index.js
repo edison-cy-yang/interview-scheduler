@@ -27,15 +27,11 @@ export default function Appointment(props) {
     props.interview ? SHOW : EMPTY
   );
 
-  console.log(props.interview);
-
   useEffect(() => {
     if (props.interview && mode === EMPTY) {
       transition(SHOW);
     }
     if (props.interview === null && mode === SHOW) {
-      console.log("inside the check for delete case!!!!!!!");
-      console.log(props.interview);
       transition(EMPTY);
     }
   }, [props.interview, transition, mode]);
@@ -45,34 +41,30 @@ export default function Appointment(props) {
       student: name,
       interviewer
     };
-    console.log("inside save");
-    // return () => {
-      console.log("inside return of save");
-      transition(SAVING);
-      props
-        .bookInterview(props.id, interview)
-        .then(() => {
-          transition(SHOW);
-        })
-        .catch(err => {
-          transition(ERROR_SAVE, true);
-          console.log(err);
-        });
-    // };
+    transition(SAVING);
+    props
+      .bookInterview(props.id, interview)
+      .then(() => {
+        transition(SHOW);
+      })
+      .catch(err => {
+        transition(ERROR_SAVE, true);
+        console.log(err);
+      });
   }
 
   function deleteInterview() {
     // return () => {
-      transition(DELETING, true);
-      props
-        .cancelInterview(props.id)
-        .then(() => {
-          transition(EMPTY);
-        })
-        .catch(err => {
-          transition(ERROR_DELETE, true);
-          console.log(err);
-        });
+    transition(DELETING, true);
+    props
+      .cancelInterview(props.id)
+      .then(() => {
+        transition(EMPTY);
+      })
+      .catch(err => {
+        transition(ERROR_DELETE, true);
+        console.log(err);
+      });
     // };
   }
 
@@ -110,7 +102,6 @@ export default function Appointment(props) {
         />
       )}
       {mode === SAVING && <Status message={"saving"} />}
-      {mode === DELETING && <Status message="deleting" />}
       {mode === CONFIRM && (
         <Confirm
           message="Are you sure you want to cancel the appointment?"
@@ -118,6 +109,7 @@ export default function Appointment(props) {
           onCancel={() => back()}
         />
       )}
+      {mode === DELETING && <Status message="deleting" />}
       {mode === EDIT && (
         <Form
           name={props.interview.student}
