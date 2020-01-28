@@ -102,13 +102,14 @@ export default function useApplicationData(initial) {
 
   useEffect(() => {
     socketHandler();
-    const daysPromise = axios.get("http://localhost:8001/api/days");
-    const appointmentsPromise = axios.get("http://localhost:8001/api/appointments");
-    const interviewersPromise = axios.get("http://localhost:8001/api/interviewers");
-    Promise.all([daysPromise, appointmentsPromise, interviewersPromise]).then((all) => {
+    axios.defaults.baseURL = "http://localhost:8001";
+    const daysPromise = axios.get("/api/days");
+    const appointmentsPromise = axios.get("/api/appointments");
+    const interviewersPromise = axios.get("/api/interviewers");
+    Promise.all([daysPromise, appointmentsPromise, interviewersPromise]).then(([days, appointments, interviewers]) => {
       console.log(state);
       
-      dispatch({type: SET_APPLICATION_DATA, value: {days: all[0].data, appointments: all[1].data, interviewers: all[2].data}});
+      dispatch({type: SET_APPLICATION_DATA, value: {days: days.data, appointments: appointments.data, interviewers: interviewers.data}});
     });
   }, []);
 
