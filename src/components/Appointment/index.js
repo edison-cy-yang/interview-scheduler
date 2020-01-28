@@ -40,14 +40,14 @@ export default function Appointment(props) {
     }
   }, [props.interview, transition, mode]);
 
-  ///problem is mode is not transitioned when props came in
-
   function save(name, interviewer) {
     const interview = {
       student: name,
       interviewer
     };
-    return () => {
+    console.log("inside save");
+    // return () => {
+      console.log("inside return of save");
       transition(SAVING);
       props
         .bookInterview(props.id, interview)
@@ -58,11 +58,11 @@ export default function Appointment(props) {
           transition(ERROR_SAVE, true);
           console.log(err);
         });
-    };
+    // };
   }
 
   function deleteInterview() {
-    return () => {
+    // return () => {
       transition(DELETING, true);
       props
         .cancelInterview(props.id)
@@ -73,7 +73,7 @@ export default function Appointment(props) {
           transition(ERROR_DELETE, true);
           console.log(err);
         });
-    };
+    // };
   }
 
   function confirmDelete() {
