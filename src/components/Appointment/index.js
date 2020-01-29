@@ -36,6 +36,7 @@ export default function Appointment(props) {
     }
   }, [props.interview, transition, mode]);
 
+  //Save an interview, then set the visual mode to SHOW
   function save(name, interviewer) {
     const interview = {
       student: name,
@@ -53,8 +54,8 @@ export default function Appointment(props) {
       });
   }
 
+  //Delete an interview, then set the visual mode to EMPTY
   function deleteInterview() {
-    // return () => {
     transition(DELETING, true);
     props
       .cancelInterview(props.id)
@@ -65,7 +66,6 @@ export default function Appointment(props) {
         transition(ERROR_DELETE, true);
         console.log(err);
       });
-    // };
   }
 
   function confirmDelete() {
@@ -129,4 +129,4 @@ export default function Appointment(props) {
       )}
     </article>
   );
-}
+};

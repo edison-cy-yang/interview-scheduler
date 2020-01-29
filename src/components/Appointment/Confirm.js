@@ -4,7 +4,7 @@ import Button from "../Button";
 
 export default function Confirm(props) {
   function cancel() {
-    props.onCancel(); //why??
+    props.onCancel();
   }
   return (
     <main className="appointment__card appointment__card--confirm">

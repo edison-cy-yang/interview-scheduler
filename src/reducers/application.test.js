@@ -6,4 +6,4 @@ describe("reducer", () => {
       /tried to reduce with unsupported action type/i
     );
   });
-})
+});

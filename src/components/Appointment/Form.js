@@ -18,12 +18,16 @@ export default function Form(props) {
     props.onCancel();
   }
 
+  //Validate 
   function validate() {
     if (name === "") {
       setError("Student name cannot be blank");
       return;
     }
-    console.log("in validate");
+    if (interviewer === null) {
+      setError("Interviewer cannot be blank");
+      return;
+    }
     props.onSave(name, interviewer);
     setError("");
   }
@@ -57,4 +61,4 @@ export default function Form(props) {
       </section>
     </main>
   );
-}
+};

@@ -7,6 +7,7 @@ export default function reducer(state, action) {
   switch (action.type) {
     case SET_DAY:
       return { ...state, day: action.value };
+    // Load all application data on initial app load
     case SET_APPLICATION_DATA:
       return {
         ...state,
@@ -62,8 +63,9 @@ export default function reducer(state, action) {
         `Tried to reduce with unsupported action type: ${action.type}`
       );
   }
-}
+};
 
+// Update count of spots left after interview is created/deleted
 function updateCount(array, action) {
   return array.map((item, index) => {
     if (item.name !== action.day) {
