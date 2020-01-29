@@ -118,7 +118,7 @@ export default function useApplicationData(initial) {
 
   useEffect(() => {
     socketHandler();
-    axios.defaults.baseURL = "http://localhost:8001";
+    // axios.defaults.baseURL = "http://localhost:8001";
     const daysPromise = axios.get("/api/days");
     const appointmentsPromise = axios.get("/api/appointments");
     const interviewersPromise = axios.get("/api/interviewers");
@@ -139,7 +139,7 @@ export default function useApplicationData(initial) {
 
   function bookInterview(id, interview) {
     return axios
-      .put(`http://localhost:8001/api/appointments/${id}`, { interview })
+      .put(`/api/appointments/${id}`, { interview })
       .then(res => {
         dispatch({
           type: SET_INTERVIEW,
@@ -154,7 +154,7 @@ export default function useApplicationData(initial) {
 
   function cancelInterview(id) {
     return axios
-      .delete(`http://localhost:8001/api/appointments/${id}`)
+      .delete(`/api/appointments/${id}`)
       .then(res => {
         dispatch({ type: DELETE_INTERVIEW, value: { id, sync: false } });
         return Promise.resolve();
