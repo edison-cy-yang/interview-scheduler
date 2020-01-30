@@ -21,3 +21,8 @@ npm test
 ```sh
 npm run storybook
 ```
+## Screenshots
+
+!["To create an interview"](https://github.com/edison-cy-yang/interview-scheduler/blob/master/docs/Interview%20Create%20Form.png)
+
+!["To view an interview"](https://github.com/edison-cy-yang/interview-scheduler/blob/master/docs/Interview%20Show%20Form.png)
